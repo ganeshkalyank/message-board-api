@@ -151,4 +151,47 @@ def edit_post(id):
         return {"msg":"Post created by other user!"}
     return {"msg":"Login to update post!"}
 
+@route("/posts/delete/<id:int>", method="DELETE")
+def delete_post(id):
+    if request.get_cookie("username",secret=app_key):
+        username = request.get_cookie("username",secret=app_key)
+        u = users.select().where(users.c.username == username)
+        user = conn.execute(u).fetchone()
+        p = posts.select().where(posts.c.id == id)
+        post = conn.execute(p).fetchone()
+        if user.id == post.user:
+            p_del = posts.delete().where(posts.c.id == id)
+            post_del = conn.execute(p_del)
+            if post_del:
+                return {"msg":"Post deleted succesfully!"}
+            return {"msg":"Error deleting post!"}
+        return {"msg":"Post created by other user!"}
+    return {"msg":"Login to delete post!"}
+
+@post("/reply/add/<id:int>")
+def add_reply(id):
+    if request.get_cookie("username",secret=app_key):
+        body = request.forms.get("body")
+        username = request.get_cookie("username",secret=app_key)
+        u = users.select().where(users.c.username == username)
+        user = conn.execute(u).fetchone()
+        r = replies.insert().values(post=id,user=user.id,body=body)
+        post = conn.execute(r)
+        if post:
+            return {"msg":"Reply added succesfully!"}
+        return {"msg":"Error adding reply!"}
+    return {"msg":"Login to reply!"}
+
+@get("/reply/post/<id:int>")
+def get_replies_by_post(id):
+    r = replies.select().where(replies.c.post == id)
+    reply_result = conn.execute(r).fetchall()
+    reply_list = []
+    for reply in reply_result:
+        reply_list.append({
+            "body":reply.body,
+            "user":reply.user
+        })
+    return {"post_id":id,"replies":reply_list}
+
 run(host="localhost",port=8080)
