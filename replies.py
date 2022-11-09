@@ -1,4 +1,4 @@
-from bottle import post, request, get
+from bottle import post, request, get, response
 from models import users, conn, replies
 
 app_key = "may the force be with you"
@@ -13,8 +13,11 @@ def add_reply(id):
         r = replies.insert().values(post=id,user=user.id,body=body)
         post = conn.execute(r)
         if post:
+            response.status = 201
             return {"msg":"Reply added succesfully!"}
+        response.status = 500
         return {"msg":"Error adding reply!"}
+    response.status = 401
     return {"msg":"Login to reply!"}
 
 @get("/reply/post/<id:int>")
@@ -27,4 +30,5 @@ def get_replies_by_post(id):
             "body":reply.body,
             "user":reply.user
         })
+    response.status = 200
     return {"post_id":id,"replies":reply_list}

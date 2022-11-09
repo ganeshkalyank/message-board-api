@@ -5,6 +5,7 @@ from replies import *
 
 @get("/")
 def index():
+    response.status = 200
     return {"msg":"Server is running!"}
 
 run(host="localhost",port=8080)
