@@ -21,6 +21,14 @@ posts = Table(
     Column("user", Integer, ForeignKey("users.id"))
 )
 
+replies = Table(
+    "replies", meta,
+    Column("id", Integer, primary_key=True),
+    Column("user", Integer, ForeignKey("users.id")),
+    Column("post", Integer, ForeignKey("posts.id")),
+    Column("body", String)
+)
+
 meta.create_all(engine)
 conn = engine.connect()
 
@@ -99,7 +107,7 @@ def get_n_posts(n):
             "body":post.body,
             "user":post.user
         })
-    return {"posts":post_list}
+    return {"feed":post_list}
 
 @get("/posts/id/<id:int>")
 def get_post_by_id(id):
@@ -113,11 +121,11 @@ def get_post_by_id(id):
 def add_post():
     if request.get_cookie("username",secret=app_key):
         title = request.forms.get("title")
-        description = request.forms.get("description")
+        body = request.forms.get("body")
         username = request.get_cookie("username",secret=app_key)
         u = users.select().where(users.c.username == username)
         user = conn.execute(u).fetchone()
-        p = posts.insert().values(title = title, body = description, user = user.id)
+        p = posts.insert().values(title = title, body = body, user = user.id)
         post = conn.execute(p)
         if post:
             return {"msg":"Post added successfully!"}
@@ -125,17 +133,17 @@ def add_post():
     return {"msg":"Login to add post!"}
 
 @route("/posts/update/<id:int>", method="PATCH")
-def edit_post():
+def edit_post(id):
     if request.get_cookie("username",secret=app_key):
         title = request.forms.get("title")
-        description = request.forms.get("description")
-        username = request.get("username",secret=app_key)
+        body = request.forms.get("body")
+        username = request.get_cookie("username",secret=app_key)
         u = users.select().where(users.c.username == username)
         user = conn.execute(u).fetchone()
         p = posts.select().where(posts.c.id == id)
         post = conn.execute(p).fetchone()
         if post.user == user.id:
-            p_new = posts.update().where(posts.c.id == id).values(title = title,description = description)
+            p_new = posts.update().where(posts.c.id == id).values(title = title,body = body)
             post_new = conn.execute(p_new)
             if post_new:
                 return {"msg":"Post updated successfully!"}
