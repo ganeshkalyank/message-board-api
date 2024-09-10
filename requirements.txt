@@ -1,5 +1,12 @@
-bottle==0.12.23
-greenlet==2.0.1
-MarkupSafe==2.1.1
-SQLAlchemy==1.4.43
-Werkzeug==2.2.2
+bottle==0.13.1
+click==8.1.7
+greenlet==3.0.3
+gunicorn==23.0.0
+h11==0.14.0
+MarkupSafe==2.1.5
+packaging==24.1
+SQLAlchemy==2.0.34
+typing_extensions==4.12.2
+uvicorn==0.30.6
+uvicorn-worker==0.2.0
+Werkzeug==3.0.4
